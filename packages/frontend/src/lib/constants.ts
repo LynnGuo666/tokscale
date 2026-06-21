@@ -59,7 +59,7 @@ export const SOURCE_DISPLAY_NAMES: Record<ClientType, string> = {
   grok: "Grok Build",
   jcode: "Jcode",
   commandcode: "Command Code",
-  micode: "MiMo Code",
+  mimo: "MiMo Code",
   junie: "Junie",
 };
 
@@ -99,7 +99,7 @@ export const SOURCE_LOGOS: Record<ClientType, string> = {
   jcode: `${GITHUB_CDN_BASE}/client-jcode.png`,
   commandcode:
     "https://raw.githubusercontent.com/CommandCodeAI/command-code/main/.github/commandcode/logo/command-code-logo-black-bg.png",
-  micode: "https://github.com/XiaomiMiMo.png",
+  mimo: "https://github.com/XiaomiMiMo.png",
   junie: "https://github.com/JetBrains.png",
 };
 
@@ -136,7 +136,7 @@ export const SOURCE_COLORS: Record<ClientType, string> = {
   grok: "#171717",
   jcode: "#F59E0B",
   commandcode: "#A855F7",
-  micode: "#FF6900",
+  mimo: "#FF6900",
   junie: "#7B61FF",
 };
 

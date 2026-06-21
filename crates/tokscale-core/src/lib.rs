@@ -896,22 +896,22 @@ fn parse_all_messages_with_pricing_with_env_strategy(
     }
 
     // Parse MiMo Code: SQLite database(s)
-    let mut micode_seen: HashSet<String> = HashSet::new();
+    let mut mimo_seen: HashSet<String> = HashSet::new();
 
-    for db_path in &scan_result.micode_dbs {
+    for db_path in &scan_result.mimo_dbs {
         let CachedParseOutcome {
             messages,
             cache_entry,
             ..
         } = load_or_parse_sqlite_source(db_path, &source_cache, pricing, |path| {
-            sessions::micode::parse_micode_sqlite(path)
+            sessions::mimo::parse_mimo_sqlite(path)
         });
 
         all_messages.extend(messages.into_iter().filter(|message| {
             message
                 .dedup_key
                 .as_ref()
-                .is_none_or(|key| micode_seen.insert(key.clone()))
+                .is_none_or(|key| mimo_seen.insert(key.clone()))
         }));
 
         if let Some(entry) = cache_entry {

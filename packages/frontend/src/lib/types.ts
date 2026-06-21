@@ -30,7 +30,7 @@ export const SUPPORTED_CLIENT_TYPES = [
   "grok",
   "jcode",
   "commandcode",
-  "micode",
+  "mimo",
   "antigravity-cli",
   "junie",
 ] as const;

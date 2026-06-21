@@ -461,9 +461,9 @@ define_clients!(
         submit_default: true
     },
     MiMoCode = 30 => {
-        id: "micode",
+        id: "mimo",
         root: PathRoot::XdgData,
-        relative: "micode",
+        relative: "mimocode",
         pattern: "*.db",
         headless: false,
         parse_local: true,

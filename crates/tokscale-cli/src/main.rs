@@ -890,7 +890,7 @@ pub enum ClientFilter {
     Grok,
     Jcode,
     Commandcode,
-    Micode,
+    Mimo,
     #[value(name = "antigravity-cli")]
     AntigravityCli,
     Junie,
@@ -933,7 +933,7 @@ impl ClientFilter {
             Self::Grok => "grok",
             Self::Jcode => "jcode",
             Self::Commandcode => "commandcode",
-            Self::Micode => "micode",
+            Self::Mimo => "mimo",
             Self::AntigravityCli => "antigravity-cli",
             Self::Junie => "junie",
             Self::Synthetic => "synthetic",
@@ -978,7 +978,7 @@ impl ClientFilter {
             Self::Grok => Some(ClientId::Grok),
             Self::Jcode => Some(ClientId::Jcode),
             Self::Commandcode => Some(ClientId::CommandCode),
-            Self::Micode => Some(ClientId::MiMoCode),
+            Self::Mimo => Some(ClientId::MiMoCode),
             Self::AntigravityCli => Some(ClientId::AntigravityCli),
             Self::Junie => Some(ClientId::Junie),
             Self::Synthetic => None,
@@ -1020,7 +1020,7 @@ impl ClientFilter {
             ClientId::Grok => Self::Grok,
             ClientId::Jcode => Self::Jcode,
             ClientId::CommandCode => Self::Commandcode,
-            ClientId::MiMoCode => Self::Micode,
+            ClientId::MiMoCode => Self::Mimo,
             ClientId::AntigravityCli => Self::AntigravityCli,
             ClientId::Junie => Self::Junie,
         }
@@ -1136,7 +1136,7 @@ pub struct ClientFlags {
     #[arg(long, hide = true)]
     pub commandcode: bool,
     #[arg(long, hide = true)]
-    pub micode: bool,
+    pub mimo: bool,
     #[arg(long, hide = true)]
     pub synthetic: bool,
 }
@@ -1240,7 +1240,7 @@ fn build_client_filter_with_defaults(
         (flags.grok, ClientFilter::Grok),
         (flags.jcode, ClientFilter::Jcode),
         (flags.commandcode, ClientFilter::Commandcode),
-        (flags.micode, ClientFilter::Micode),
+        (flags.mimo, ClientFilter::Mimo),
         (flags.synthetic, ClientFilter::Synthetic),
     ];
 
@@ -6029,7 +6029,7 @@ mod tests {
             grok: true,
             jcode: true,
             commandcode: true,
-            micode: true,
+            mimo: true,
             synthetic: true,
             ..ClientFlags::default()
         };
@@ -6070,7 +6070,7 @@ mod tests {
             "gjc",
             "grok",
             "jcode",
-            "micode",
+            "mimo",
             "commandcode",
             "synthetic",
         ];

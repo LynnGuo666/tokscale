@@ -1,7 +1,7 @@
 //! MiMo Code session parser
 //!
 //! Parses messages from:
-//! - SQLite database: ~/.local/share/micode/mimocode.db
+//! - SQLite database: ~/.local/share/mimocode/mimocode.db
 
 use super::utils::open_readonly_sqlite;
 use super::{
@@ -29,7 +29,7 @@ pub struct MiMoCodeMessage {
     pub time: MiMoCodeTime,
     pub agent: Option<String>,
     pub mode: Option<String>,
-    #[serde(default, deserialize_with = "deserialize_micode_path")]
+    #[serde(default, deserialize_with = "deserialize_mimo_path")]
     pub path: Option<MiMoCodePath>,
 }
 
@@ -38,7 +38,7 @@ pub struct MiMoCodePath {
     pub root: Option<String>,
 }
 
-fn deserialize_micode_path<'de, D>(deserializer: D) -> Result<Option<MiMoCodePath>, D::Error>
+fn deserialize_mimo_path<'de, D>(deserializer: D) -> Result<Option<MiMoCodePath>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -130,7 +130,7 @@ fn merge_duplicate_workspace(
     }
 }
 
-fn micode_duration_ms(time: &MiMoCodeTime) -> Option<i64> {
+fn mimo_duration_ms(time: &MiMoCodeTime) -> Option<i64> {
     let duration = time.completed? - time.created;
     if duration.is_finite() && duration > 0.0 {
         Some(duration as i64)
@@ -139,7 +139,7 @@ fn micode_duration_ms(time: &MiMoCodeTime) -> Option<i64> {
     }
 }
 
-pub fn parse_micode_sqlite(db_path: &Path) -> Vec<UnifiedMessage> {
+pub fn parse_mimo_sqlite(db_path: &Path) -> Vec<UnifiedMessage> {
     let Some(conn) = open_readonly_sqlite(db_path) else {
         return Vec::new();
     };
@@ -243,7 +243,7 @@ pub fn parse_micode_sqlite(db_path: &Path) -> Vec<UnifiedMessage> {
         };
 
         let mut unified = UnifiedMessage::new_with_agent(
-            "micode",
+            "mimo",
             model_id,
             provider_id,
             session_id,
@@ -260,7 +260,7 @@ pub fn parse_micode_sqlite(db_path: &Path) -> Vec<UnifiedMessage> {
             cost,
             agent,
         );
-        unified.duration_ms = micode_duration_ms(&msg.time);
+        unified.duration_ms = mimo_duration_ms(&msg.time);
         unified.dedup_key = Some(dedup_key);
         let workspace_root = row_workspace_root
             .as_deref()
@@ -293,7 +293,7 @@ mod tests {
     use super::*;
     use rusqlite::Connection;
 
-    fn create_micode_sqlite_db(db_path: &Path) -> Connection {
+    fn create_mimo_sqlite_db(db_path: &Path) -> Connection {
         let conn = Connection::open(db_path).unwrap();
         conn.execute_batch(
             "CREATE TABLE message (
@@ -307,11 +307,11 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_micode_sqlite_basic() {
+    fn test_parse_mimo_sqlite_basic() {
         let dir = tempfile::tempdir().unwrap();
-        let db_path = dir.path().join("test_micode.db");
+        let db_path = dir.path().join("test_mimo.db");
 
-        let conn = create_micode_sqlite_db(&db_path);
+        let conn = create_mimo_sqlite_db(&db_path);
 
         let data_json = r#"{
             "role": "assistant",
@@ -334,9 +334,9 @@ mod tests {
         .unwrap();
         drop(conn);
 
-        let messages = parse_micode_sqlite(&db_path);
+        let messages = parse_mimo_sqlite(&db_path);
         assert_eq!(messages.len(), 1);
-        assert_eq!(messages[0].client, "micode");
+        assert_eq!(messages[0].client, "mimo");
         assert_eq!(messages[0].model_id, "mimo-v2.5-pro");
         assert_eq!(messages[0].provider_id, "mimo");
         assert_eq!(messages[0].tokens.input, 1000);
@@ -349,11 +349,11 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_micode_sqlite_skips_user_messages() {
+    fn test_parse_mimo_sqlite_skips_user_messages() {
         let dir = tempfile::tempdir().unwrap();
-        let db_path = dir.path().join("test_micode.db");
+        let db_path = dir.path().join("test_mimo.db");
 
-        let conn = create_micode_sqlite_db(&db_path);
+        let conn = create_mimo_sqlite_db(&db_path);
 
         let user_msg = r#"{
             "role": "user",
@@ -381,17 +381,17 @@ mod tests {
         .unwrap();
         drop(conn);
 
-        let messages = parse_micode_sqlite(&db_path);
+        let messages = parse_mimo_sqlite(&db_path);
         assert_eq!(messages.len(), 1);
         assert_eq!(messages[0].dedup_key, Some("msg_assistant".to_string()));
     }
 
     #[test]
-    fn test_parse_micode_sqlite_negative_values_clamped() {
+    fn test_parse_mimo_sqlite_negative_values_clamped() {
         let dir = tempfile::tempdir().unwrap();
-        let db_path = dir.path().join("test_micode.db");
+        let db_path = dir.path().join("test_mimo.db");
 
-        let conn = create_micode_sqlite_db(&db_path);
+        let conn = create_mimo_sqlite_db(&db_path);
 
         let data_json = r#"{
             "role": "assistant",
@@ -414,7 +414,7 @@ mod tests {
         .unwrap();
         drop(conn);
 
-        let messages = parse_micode_sqlite(&db_path);
+        let messages = parse_mimo_sqlite(&db_path);
         assert_eq!(messages.len(), 1);
         assert_eq!(messages[0].tokens.input, 0);
         assert_eq!(messages[0].tokens.output, 0);
@@ -425,10 +425,10 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_micode_sqlite_dedup_forked_history() {
+    fn test_parse_mimo_sqlite_dedup_forked_history() {
         let dir = tempfile::tempdir().unwrap();
-        let db_path = dir.path().join("test_micode.db");
-        let conn = create_micode_sqlite_db(&db_path);
+        let db_path = dir.path().join("test_mimo.db");
+        let conn = create_mimo_sqlite_db(&db_path);
 
         let root_msg = r#"{
             "role": "assistant",
@@ -475,17 +475,17 @@ mod tests {
         .unwrap();
         drop(conn);
 
-        let messages = parse_micode_sqlite(&db_path);
+        let messages = parse_mimo_sqlite(&db_path);
         assert_eq!(messages.len(), 2);
         assert_eq!(messages[0].tokens.input, 1000);
         assert_eq!(messages[1].tokens.input, 1300);
     }
 
     #[test]
-    fn test_parse_micode_sqlite_workspace_from_session() {
+    fn test_parse_mimo_sqlite_workspace_from_session() {
         let dir = tempfile::tempdir().unwrap();
-        let db_path = dir.path().join("test_micode.db");
-        let conn = create_micode_sqlite_db(&db_path);
+        let db_path = dir.path().join("test_mimo.db");
+        let conn = create_mimo_sqlite_db(&db_path);
         conn.execute_batch(
             "CREATE TABLE session (
                 id TEXT PRIMARY KEY,
@@ -520,7 +520,7 @@ mod tests {
         .unwrap();
         drop(conn);
 
-        let messages = parse_micode_sqlite(&db_path);
+        let messages = parse_mimo_sqlite(&db_path);
         assert_eq!(messages.len(), 1);
         assert_eq!(
             messages[0].workspace_key.as_deref(),
@@ -530,10 +530,10 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_micode_sqlite_with_agent() {
+    fn test_parse_mimo_sqlite_with_agent() {
         let dir = tempfile::tempdir().unwrap();
-        let db_path = dir.path().join("test_micode.db");
-        let conn = create_micode_sqlite_db(&db_path);
+        let db_path = dir.path().join("test_mimo.db");
+        let conn = create_mimo_sqlite_db(&db_path);
 
         let data_json = r#"{
             "role": "assistant",
@@ -557,16 +557,16 @@ mod tests {
         .unwrap();
         drop(conn);
 
-        let messages = parse_micode_sqlite(&db_path);
+        let messages = parse_mimo_sqlite(&db_path);
         assert_eq!(messages.len(), 1);
         assert_eq!(messages[0].agent, Some("Build".to_string()));
     }
 
     #[test]
-    fn test_parse_micode_sqlite_missing_cache_defaults_to_zero() {
+    fn test_parse_mimo_sqlite_missing_cache_defaults_to_zero() {
         let dir = tempfile::tempdir().unwrap();
-        let db_path = dir.path().join("test_micode.db");
-        let conn = create_micode_sqlite_db(&db_path);
+        let db_path = dir.path().join("test_mimo.db");
+        let conn = create_mimo_sqlite_db(&db_path);
 
         // Assistant payload with no `cache` object at all — must parse (not be
         // dropped) with cache tokens defaulting to 0.
@@ -590,7 +590,7 @@ mod tests {
         .unwrap();
         drop(conn);
 
-        let messages = parse_micode_sqlite(&db_path);
+        let messages = parse_mimo_sqlite(&db_path);
         assert_eq!(messages.len(), 1);
         assert_eq!(messages[0].tokens.input, 1000);
         assert_eq!(messages[0].tokens.output, 500);
